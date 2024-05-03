@@ -7,9 +7,20 @@ const AuthRouter = Router();
 
 AuthRouter.post("/login", async (req, res) => {
   const { email, password } = req.body;
-  // TODO: Login basierend auf email/password
+  if (!email || !password) {
+    res.status(StatusCodes.BAD_REQUEST).send(ReasonPhrases.BAD_REQUEST);
+    return;
+  }
+  const user = await UserModel.findOne({ where: { email } });
+
+  if (user.password !== password) {
+    res.status(StatusCodes.UNAUTHORIZED).send(ReasonPhrases.UNAUTHORIZED);
+    return;
+  }
   // Token soll erstellt werden und zurückgegeben werden
-  res.send("Ich bin nur ein Platzhalter");
+  const myToken = AccessTokens.createAccessToken(user.id);
+
+  res.status(StatusCodes.OK).json({ user, tokens: { accessToken: myToken } });
 });
 
 AuthRouter.post("/signup", async (req, res) => {
@@ -18,9 +29,10 @@ AuthRouter.post("/signup", async (req, res) => {
     res.status(StatusCodes.BAD_REQUEST).send(ReasonPhrases.BAD_REQUEST);
     return;
   }
-  // TODO: Signup basierend auf email, password, name, profileImgUrl
+  const user = await UserModel.create({ email, password, name, profileImgUrl });
   // Token soll erstellt werden und zurückgegeben werden
-  res.send("Ich bin nur ein Platzhalter");
+  const myToken = AccessTokens.createAccessToken(user.id);
+  res.status(StatusCodes.OK).json({ user, tokens: { accessToken: myToken } });
 });
 
 module.exports = { AuthRouter };
