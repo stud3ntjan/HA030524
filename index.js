@@ -1,11 +1,20 @@
-const { Router } = require("express");
-const { AuthRouter } = require("./auth");
-const { UserRouter } = require("./users");
+const todoSequelize = require("./src/database/setup/database");
+const app = require("./src/server");
 
-const AppRouter = Router();
+// Zugriff auf Umgebungsvariablen
+// const { PORT } = process.env;
+const PORT = process.env.PORT;
 
-AppRouter.use("/auth", AuthRouter);
-// TODO: Die Users Router soll die auth Middleware durchlaufen
-AppRouter.use("/users", UserRouter);
+todoSequelize
+  .sync()
+  .then(() => {
+    console.log("DB has been successfully initialized");
+  })
+  .catch((e) => {
+    console.log(e);
+  });
 
-module.exports = { AppRouter };
+// App hört im folgenden auf den Port, welcher über die Umgebungsvariable definiert ist
+app.listen(PORT, () => {
+  console.log(`Example app listening on port ${PORT}`);
+});
